@@ -1,1 +1,3 @@
-# PropertyTest
+# Property
+C#のプロパティ的なやつを作りたかったやつ。
+添削やアドバイスにClaudeを使用。
