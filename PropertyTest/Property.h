@@ -71,3 +71,50 @@ private:
 	std::function<void(const T&)> setter;
 	std::function<T& (void)> getter;
 };
+
+
+
+template <typename T>
+class PropertyReadOnly
+{
+	static_assert(!std::is_pointer<T>::value,
+		"I don't delete pointer. Recommend not use raw pointer./こっちでdeleteしないので、生ポインター非推奨っす。");
+public:
+
+	PropertyReadOnly(std::function<T& (void)> _getter)
+		: getter(_getter)
+	{
+	}
+
+	PropertyReadOnly(const PropertyReadOnly& other)
+		: getter(other.getter)
+	{
+	}
+
+	PropertyReadOnly& operator= (const PropertyReadOnly& other)
+	{
+		getter = other.getter;
+
+		return *this;
+	}
+
+	PropertyReadOnly(PropertyReadOnly&& other) noexcept
+		: getter(std::move(other.getter))
+	{
+	}
+
+	~PropertyReadOnly() = default;
+
+	operator T() const
+	{
+		return Get();
+	}
+
+	T& Get() const
+	{
+		return getter();
+	}
+
+private:
+	std::function<T& (void)> getter;
+};

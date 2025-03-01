@@ -1,9 +1,6 @@
-﻿// PropertyTest.cpp : このファイルには 'main' 関数が含まれています。プログラム実行の開始と終了がそこで行われます。
-//
-
-#include <iostream>
+﻿#include <iostream>
 #include <cmath>
-#include <ctime>
+#include <Windows.h>
 
 #include "Property.h"
 
@@ -12,6 +9,7 @@ int main()
     //テスト1 int型 Get改造
     int t1_value = 0;
     int t1v = 90;
+
     Property<int> t1
     {
         [&t1v]()-> int& { return t1v; },
@@ -36,19 +34,19 @@ int main()
 
 
     //===============================
-    ////テスト アクセス権限 あんま上手くいかないのでとりあえず後回し
-    //int t3_value = 0;
+    //テスト アクセス権限
 
-    ////Getterのみ
-    //Property<int> t3
-    //{
-    //    [&t3_value]()-> int& { return t3_value; },
-    //    [](const int& _value) {  }
-    //};
+    SYSTEMTIME t;
+    GetLocalTime(&t);
 
-    //t3_value = 50;
+    //Getterのみ
+    PropertyReadOnly <WORD> t3
+    {
+        [&t]()-> WORD& { return t.wMinute; },
+        //[](const WORD& _value) {  } // <- エラー
+    };
 
-    //t3 = 100;
+    //t3 = 100; // <- エラー
 
-    //std::cout << "t3: " << t3 << std::endl;
+    std::cout << "t3(現在の分): " << t3 << std::endl;
 }
