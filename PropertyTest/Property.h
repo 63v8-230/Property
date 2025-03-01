@@ -1,29 +1,44 @@
 #pragma once
 #include <functional>
 
+/*
+メモ
+
+==デフォルトコンストラクターが無い理由==
+C#だと自動実装で勝手にフィールド変数作ってくれるけど、これだと出来ない。
+なので、それならもう実装を強制させた方が多分安全だろうなって
+
+*/
+
 template <typename T>
 class Property
 {
 	static_assert(!std::is_pointer<T>::value,
-		"No Raw pointers. Use smart pointers./生ポインター使うな。スマートポインター使え。");
+		"I don't delete pointer. Recommend not use raw pointer./こっちでdeleteしないので、生ポインター非推奨っす。");
 public:
-	Property()
-		:value{}
-	{
-		setter = [](T _value) const T& { return _value; };
-		getter = [](T _value) const T& { return _value; };
-	}
 
-	Property(std::function<const T& (const T&)> _getter, std::function<const T& (const T&)> _setter)
-		: value{}
-		, getter(_getter)
+	Property(std::function<T& (void)> _getter, std::function<void (const T&)> _setter)
+		: getter(_getter)
 		, setter(_setter)
 	{
 	}
 
+	Property(const Property& other)
+		: setter(other.setter)
+		, getter(other.getter)
+	{
+	}
+
+	Property& operator= (const Property& other)
+	{
+		setter = other.setter;
+		getter = other.getter;
+
+		return *this;
+	}
+
 	Property(Property&& other) noexcept
-		: value(std::move(other.value))
-		, setter(std::move(other.setter))
+		: setter(std::move(other.setter))
 		, getter(std::move(other.getter))
 	{
 	}
@@ -35,26 +50,14 @@ public:
 		return Get();
 	}
 
-	void SetSetter(std::function<const T& (const T&)> _func)
+	T& Get() const
 	{
-		if (!_func) throw std::invalid_argument("_func is null./_funcが空っす。");
-		setter = _func;
-	}
-
-	void SetGetter(std::function<const T& (const T&)> _func)
-	{
-		if (!_func) throw std::invalid_argument("_func is null./_funcが空っす。");
-		getter = _func;
-	}
-
-	const T& Get() const
-	{
-		return getter(value);
+		return getter();
 	}
 
 	void Set(const T& _value)
 	{
-		value = setter(_value);
+		setter(_value);
 	}
 
 	Property& operator= (const T& _value)
@@ -63,16 +66,8 @@ public:
 		return *this;
 	}
 
-	Property& operator=(T&& _value)
-	{
-		Set(std::move(_value));
-		return *this;
-	}
-
 private:
 
-	T value{};
-
-	std::function<const T& (const T&)> setter;
-	std::function<const T& (const T&)> getter;
+	std::function<void(const T&)> setter;
+	std::function<T& (void)> getter;
 };

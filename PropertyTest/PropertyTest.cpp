@@ -2,40 +2,53 @@
 //
 
 #include <iostream>
+#include <cmath>
+#include <ctime>
 
 #include "Property.h"
 
 int main()
 {
-    Property<int> t1;
-    t1.SetSetter([](int v) { return v + 10; });
-    Property<int> t2;
-    t2.SetGetter([](int v) { return v + 100; });
+    //テスト1 int型 Get改造
+    int t1_value = 0;
+    int t1v = 90;
+    Property<int> t1
+    {
+        [&t1v]()-> int& { return t1v; },
+        [&t1_value](const int& _value) { t1_value = _value + 10; }
+    };
 
-    //エラー/error
-    //Property<int*> er;
-
-    t1 = 5;
-    t2 = 10;
-
-    int a;
-    int b = t2;
-
-    a = t1;
-
+    t1 = 10;
     std::cout << "t1: " << t1 << std::endl;
-    std::cout << "t2: " << b;
-    
 
+    //===============================
+    //テスト2 float型 Set改造
+    float t2_value = 0;
+
+    Property<float> t2
+    {
+        [&t2_value]()-> float& { return t2_value; },
+        [&t2_value](const float& _value) { t2_value = floorf(_value); }
+    };
+
+    t2 = 33.4f;
+    std::cout << "t2: " << t2 << std::endl;
+
+
+    //===============================
+    ////テスト アクセス権限 あんま上手くいかないのでとりあえず後回し
+    //int t3_value = 0;
+
+    ////Getterのみ
+    //Property<int> t3
+    //{
+    //    [&t3_value]()-> int& { return t3_value; },
+    //    [](const int& _value) {  }
+    //};
+
+    //t3_value = 50;
+
+    //t3 = 100;
+
+    //std::cout << "t3: " << t3 << std::endl;
 }
-
-// プログラムの実行: Ctrl + F5 または [デバッグ] > [デバッグなしで開始] メニュー
-// プログラムのデバッグ: F5 または [デバッグ] > [デバッグの開始] メニュー
-
-// 作業を開始するためのヒント: 
-//    1. ソリューション エクスプローラー ウィンドウを使用してファイルを追加/管理します 
-//   2. チーム エクスプローラー ウィンドウを使用してソース管理に接続します
-//   3. 出力ウィンドウを使用して、ビルド出力とその他のメッセージを表示します
-//   4. エラー一覧ウィンドウを使用してエラーを表示します
-//   5. [プロジェクト] > [新しい項目の追加] と移動して新しいコード ファイルを作成するか、[プロジェクト] > [既存の項目の追加] と移動して既存のコード ファイルをプロジェクトに追加します
-//   6. 後ほどこのプロジェクトを再び開く場合、[ファイル] > [開く] > [プロジェクト] と移動して .sln ファイルを選択します
