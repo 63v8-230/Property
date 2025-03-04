@@ -107,8 +107,8 @@ public:
 
 	Property& operator= (const Property& other)
 	{
-		this.setter = other.setter;
-		this.getter = other.getter;
+		this->setter = other.setter;
+		this->getter = other.getter;
 
 		return *this;
 	}
