@@ -23,5 +23,8 @@
     <ClInclude Include="Property.h">
       <Filter>ソース ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="Property_old.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -3,6 +3,7 @@
 #include <Windows.h>
 
 #include "Property.h"
+//#include "Property_old.h"
 
 int main()
 {
@@ -49,4 +50,24 @@ int main()
     //t3 = 100; // <- エラー
 
     std::cout << "t3(現在の分): " << t3 << std::endl;
+
+    //===============================
+    //テスト Setter <- Getter
+
+    int t41 = 50;
+    long t42 = 10;
+    
+    PropertyReadOnly<int> t4r
+    {
+        [&t41]()->int& { return t41; }
+    };
+
+    PropertyWriteOnly<long> t4w
+    {
+        [&t42](const long& _value) { t42 = _value; }
+    };
+
+    t4w = t4r;
+
+    std::cout << "t4: " << t42 << std::endl;
 }

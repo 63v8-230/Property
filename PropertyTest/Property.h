@@ -1,84 +1,10 @@
 #pragma once
 #include <functional>
 
-/*
-メモ
-
-==デフォルトコンストラクターが無い理由==
-C#だと自動実装で勝手にフィールド変数作ってくれるけど、これだと出来ない。
-なので、それならもう実装を強制させた方が多分安全だろうなって
-
-*/
-
-template <typename T>
-class Property
-{
-	static_assert(!std::is_pointer<T>::value,
-		"I don't delete pointer. Recommend not use raw pointer./こっちでdeleteしないので、生ポインター非推奨っす。");
-public:
-
-	Property(std::function<T& (void)> _getter, std::function<void (const T&)> _setter)
-		: getter(_getter)
-		, setter(_setter)
-	{
-	}
-
-	Property(const Property& other)
-		: setter(other.setter)
-		, getter(other.getter)
-	{
-	}
-
-	Property& operator= (const Property& other)
-	{
-		setter = other.setter;
-		getter = other.getter;
-
-		return *this;
-	}
-
-	Property(Property&& other) noexcept
-		: setter(std::move(other.setter))
-		, getter(std::move(other.getter))
-	{
-	}
-
-	~Property() = default;
-
-	operator T() const
-	{
-		return Get();
-	}
-
-	T& Get() const
-	{
-		return getter();
-	}
-
-	void Set(const T& _value)
-	{
-		setter(_value);
-	}
-
-	Property& operator= (const T& _value)
-	{
-		Set(_value);
-		return *this;
-	}
-
-private:
-
-	std::function<void(const T&)> setter;
-	std::function<T& (void)> getter;
-};
-
-
 
 template <typename T>
 class PropertyReadOnly
 {
-	static_assert(!std::is_pointer<T>::value,
-		"I don't delete pointer. Recommend not use raw pointer./こっちでdeleteしないので、生ポインター非推奨っす。");
 public:
 
 	PropertyReadOnly(std::function<T& (void)> _getter)
@@ -115,6 +41,104 @@ public:
 		return getter();
 	}
 
-private:
+protected:
 	std::function<T& (void)> getter;
+};
+
+template <typename T>
+class PropertyWriteOnly
+{
+public:
+
+	PropertyWriteOnly(std::function<void(const T&)> _setter)
+		: setter(_setter)
+	{
+	}
+
+	PropertyWriteOnly(const PropertyWriteOnly& other)
+		: setter(other.setter)
+	{
+	}
+
+	PropertyWriteOnly& operator= (const PropertyWriteOnly& other)
+	{
+		setter = other.setter;
+
+		return *this;
+	}
+
+	PropertyWriteOnly(PropertyWriteOnly&& other) noexcept
+		: setter(std::move(other.setter))
+	{
+	}
+
+	~PropertyWriteOnly() = default;
+
+	void Set(const T& _value)
+	{
+		setter(_value);
+	}
+
+	PropertyWriteOnly& operator= (const T& _value)
+	{
+		Set(_value);
+		return *this;
+	}
+
+protected:
+	std::function<void(const T&)> setter;
+};
+
+template <typename T>
+class Property : public PropertyReadOnly<T>, public PropertyWriteOnly<T>
+{
+public:
+	Property(std::function<T& (void)> _getter, std::function<void(const T&)> _setter)
+		: PropertyReadOnly<T>(_getter)
+		, PropertyWriteOnly<T>(_setter)
+	{
+	}
+
+	Property(const Property& other)
+		: PropertyReadOnly<T>(other.getter)
+		, PropertyWriteOnly<T>(other.setter)
+	{
+	}
+
+	Property& operator= (const Property& other)
+	{
+		this.setter = other.setter;
+		this.getter = other.getter;
+
+		return *this;
+	}
+
+	Property(Property&& other) noexcept
+		: PropertyWriteOnly<T>::setter(std::move(other.setter))
+		, PropertyReadOnly<T>::getter(std::move(other.getter))
+	{
+	}
+
+	~Property() = default;
+
+	operator T() const
+	{
+		return Get();
+	}
+
+	T& Get() const
+	{
+		return this->getter();
+	}
+
+	void Set(const T& _value)
+	{
+		this->setter(_value);
+	}
+
+	Property& operator= (const T& _value)
+	{
+		Set(_value);
+		return *this;
+	}
 };
