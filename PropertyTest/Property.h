@@ -114,8 +114,8 @@ public:
 	}
 
 	Property(Property&& other) noexcept
-		: PropertyWriteOnly<T>::setter(std::move(other.setter))
-		, PropertyReadOnly<T>::getter(std::move(other.getter))
+		: PropertyWriteOnly<T>(std::move(other.setter))
+		, PropertyReadOnly<T>(std::move(other.getter))
 	{
 	}
 
